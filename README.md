@@ -21,8 +21,6 @@ Built with **Next.js**, **Express**, **PostgreSQL**, **Redis**, **BullMQ**, and 
 6. [List of Features Implemented](#list-of-features-implemented)
    - [Backend Features](#backend)
    - [Frontend Features](#frontend)
-7. [Demo Video Walkthrough (Max 5 Minutes)](#demo-video-walkthrough-max-5-minutes)
-8. [Assumptions, Shortcuts & Trade-offs](#assumptions-shortcuts--trade-offs)
 
 ---
 
@@ -232,46 +230,6 @@ Outbix automatically provisions unique, real **Ethereal SMTP accounts** for ever
 | **Multiple Sender Mailboxes** | Switch between multiple Ethereal or custom senders per user |
 | **Automatic Status Updates** | Polling every 8 seconds with dynamic badges (`PENDING`, `PROCESSING`, `SENT`, `FAILED`) |
 
----
-
-## Demo Video Walkthrough (Max 5 Minutes)
-
-When recording your demo video, follow this recommended sequence:
-
-1. **Introduction & Dashboard (0:00 - 1:00)**:
-   - Log in using Google OAuth.
-   - Show the clean dashboard with **Scheduled**, **Sent**, and **All** tabs.
-2. **Scheduling an Email (1:00 - 2:00)**:
-   - Click `+ Compose new email`.
-   - Click `Insert Sample Template` to populate a realistic email.
-   - Schedule for 2 minutes in the future.
-   - Click Schedule and show the email in the **Scheduled Emails** tab with status `PENDING`.
-3. **Delivery & Status Transition (2:00 - 2:45)**:
-   - When the scheduled time arrives, observe the email status change to `SENT` and move to the **Sent Emails** tab.
-   - Show the terminal worker log output displaying the delivery message ID.
-4. **Server Restart Scenario (2:45 - 3:45)**:
-   - Schedule an email for 3 minutes in the future.
-   - Stop the backend & worker: `docker compose stop backend worker`
-   - Show that services are stopped.
-   - Restart the containers: `docker compose start backend worker`
-   - Observe worker startup log: `Email worker started` and reconciliation.
-   - Wait for the scheduled time and demonstrate that the email still delivers successfully.
-5. **Rate Limiting & Delay (Bonus) (3:45 - 4:45)**:
-   - Schedule a batch of 3 emails with a 2000ms delay.
-   - Show that emails are spaced by 2 seconds in the queue rather than firing at once.
-
----
-
-## Assumptions, Shortcuts & Trade-offs
-
-1. **Transactional Email vs Bulk Marketing**:
-   * *Trade-off*: We prioritized strict delivery order and rate limiting over ultra-high throughput by enforcing an inter-email delay (`MIN_DELAY_BETWEEN_EMAILS_MS=1000`).
-2. **PostgreSQL as Primary State Machine**:
-   * *Assumption*: Redis stores queue execution state, but PostgreSQL is the definitive truth. If Redis is flushed (`FLUSHALL`), the worker reconciles and rebuilds the queue on restart.
-3. **Ethereal vs Real SMTP**:
-   * *Shortcut*: Provided out-of-the-box auto-creation of Ethereal accounts so any evaluator can test immediately without configuring SMTP credentials. Also built full Gmail SMTP support with clean headers for live inbox testing.
-4. **NextAuth Session Token**:
-   * *Assumption*: User identity is established via Google OAuth through NextAuth. Backend routes resolve senders and emails scoped to `userId`.
 
 ---
 
@@ -279,3 +237,4 @@ When recording your demo video, follow this recommended sequence:
 * **Repository**: [https://github.com/Jayraj-khule0504/Outbox-Labs](https://github.com/Jayraj-khule0504/Outbox-Labs)
 * **Access Granted To**: `Mitrajit`
 * **Submission Form**: [https://forms.gle/2qmgDJxV3HZmf9Pt8](https://forms.gle/2qmgDJxV3HZmf9Pt8)
+
