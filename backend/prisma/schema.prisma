@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ScheduledEmailStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  googleSubject     String             @unique @map("google_subject")
+  email             String             @unique
+  name              String?
+  imageUrl          String?            @map("image_url")
+  senders           Sender[]
+  slackIntegration  SlackIntegration?
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Sender {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  email           String
+  displayName     String?          @map("display_name")
+  etherealUser    String           @map("ethereal_user")
+  etherealPassword String           @map("ethereal_password")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledEmails ScheduledEmail[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@map("senders")
+}
+
+model ScheduledEmail {
+  id            String               @id @default(cuid())
+  senderId      String               @map("sender_id")
+  toEmail       String               @map("to_email")
+  subject       String
+  body          String               @db.Text
+  sendAt        DateTime             @map("send_at")
+  status        ScheduledEmailStatus @default(PENDING)
+  attempts      Int                  @default(0)
+  hourlyLimit   Int?                 @map("hourly_limit")
+  bullmqJobId   String?              @unique @map("bullmq_job_id")
+  sentAt        DateTime?            @map("sent_at")
+  failureReason String?              @db.Text @map("failure_reason")
+  sender        Sender               @relation(fields: [senderId], references: [id], onDelete: Restrict)
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  @@index([status, sendAt])
+  @@index([senderId, status])
+  @@map("scheduled_emails")
+}
+
+model SlackIntegration {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  teamId        String   @map("team_id")
+  accessToken   String   @map("access_token")
+  webhookUrl    String?  @map("webhook_url")
+  defaultChannel String? @map("default_channel")
+  connectedAt   DateTime @default(now()) @map("connected_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("slack_integrations")
+}
